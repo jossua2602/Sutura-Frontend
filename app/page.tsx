@@ -37,10 +37,10 @@ export default function AdminDashboard() {
 
       if (response.ok && data.status === 'success') {
         // I-save ang secure token sa browser
-localStorage.setItem("admin_token", data.token);
+        localStorage.setItem("admin_token", data.token);
 
-// I-redirect papuntang dashboard
-router.push("/dashboard");
+          // I-redirect papuntang dashboard
+          router.push("/dashboard");
       } else {
         setErrorMessage(data.message || "Invalid credentials. Please try again.");
       }
