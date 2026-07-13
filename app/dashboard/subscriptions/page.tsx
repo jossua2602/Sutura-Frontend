@@ -7,7 +7,7 @@ const playfair = Playfair_Display({ subsets: ["latin"], weight: ["600"] });
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
 interface SubscriptionData {
-  sub_id: number;
+  subscription_id: number; // BINAGO MULA sub_id
   shop_name: string;
   plan: string;
   start_date: string;
@@ -47,12 +47,10 @@ export default function SubscriptionsPage() {
     fetchSubscriptions();
   }, []);
 
-  // MATALINONG INPUT HANDLER (AUTOMATION LOGIC)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     let newFormData = { ...formData, [name]: value };
 
-    // 1. Kapag binago ang Term o Start Date, i-auto compute ang End Date
     if (name === "term" || name === "start_date") {
       if (newFormData.start_date) {
         const startDate = new Date(newFormData.start_date);
@@ -64,7 +62,6 @@ export default function SubscriptionsPage() {
           endDate.setFullYear(endDate.getFullYear() + 1);
         }
         
-        // I-format pabalik sa YYYY-MM-DD
         const year = endDate.getFullYear();
         const month = String(endDate.getMonth() + 1).padStart(2, '0');
         const day = String(endDate.getDate()).padStart(2, '0');
@@ -72,14 +69,12 @@ export default function SubscriptionsPage() {
       }
     }
 
-    // 2. Kapag nagbago ang End Date (dahil sa auto-compute o manual edit), i-auto update ang Status
     if (name === "term" || name === "start_date" || name === "end_date") {
       if (newFormData.end_date) {
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Alisin ang oras para pantay ang comparison
+        today.setHours(0, 0, 0, 0); 
         const computedEndDate = new Date(newFormData.end_date);
         
-        // Kung malapit nang ma-expire (halimbawa, within 14 days)
         const warningDate = new Date(today);
         warningDate.setDate(today.getDate() + 14);
 
@@ -124,7 +119,8 @@ export default function SubscriptionsPage() {
     };
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/admin/subscriptions/${editingSub.sub_id}`, {
+      // BINAGO MULA sub_id
+      const response = await fetch(`http://127.0.0.1:8000/api/admin/subscriptions/${editingSub.subscription_id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -137,7 +133,8 @@ export default function SubscriptionsPage() {
 
       if (response.ok && result.status === 'success') {
         alert("Subscription updated successfully!");
-        setSubscriptions(subscriptions.map(sub => sub.sub_id === editingSub.sub_id ? result.data : sub));
+        // BINAGO MULA sub_id
+        setSubscriptions(subscriptions.map(sub => sub.subscription_id === editingSub.subscription_id ? result.data : sub));
         setIsModalOpen(false);
       } else {
         alert("Failed to update subscription.");
@@ -203,16 +200,17 @@ export default function SubscriptionsPage() {
             </thead>
             <tbody className="divide-y divide-[#D8CDC5]">
               {isLoading ? (
-                <tr>
+                <tr key="loading">
                   <td colSpan={6} className="px-6 py-10 text-center text-[#8A7F78] text-sm animate-pulse">Loading subscriptions...</td>
                 </tr>
               ) : subscriptions.length === 0 ? (
-                <tr>
+                <tr key="empty">
                   <td colSpan={6} className="px-6 py-10 text-center text-[#8A7F78] text-sm">No subscriptions found.</td>
                 </tr>
               ) : (
                 subscriptions.map((sub) => (
-                  <tr key={sub.sub_id} className="hover:bg-[#F6F1ED]/30 transition-colors">
+                  // BINAGO MULA sub_id
+                  <tr key={sub.subscription_id} className="hover:bg-[#F6F1ED]/30 transition-colors">
                     <td className="px-6 py-5 text-sm font-medium text-[#4A3F3A]">{sub.shop_name}</td>
                     <td className="px-6 py-5 text-sm text-[#8A7F78]">{sub.plan}</td>
                     <td className="px-6 py-5 text-sm text-[#8A7F78]">{sub.start_date}</td>
@@ -279,7 +277,6 @@ export default function SubscriptionsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-[#8A7F78] mb-1">Start Date</label>
-                  {/* Kung papalitan ni Admin ang start date, gagalaw rin ang end date nang kusa! */}
                   <input required type="date" name="start_date" value={formData.start_date} onChange={handleInputChange} 
                     className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-[#4A3F3A] focus:outline-none focus:border-[#A88A7B]" />
                 </div>
